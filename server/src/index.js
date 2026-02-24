@@ -14,7 +14,8 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/cambo_suga
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 app.use(cors({ origin: CLIENT_URL }));
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(morgan("dev"));
 
 app.get("/api/health", (_req, res) => {
@@ -32,6 +33,11 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 
 app.use((err, _req, res, _next) => {
+  if (err?.type === "entity.too.large") {
+    return res.status(413).json({
+      message: "Upload too large. Please use a smaller profile image."
+    });
+  }
   // Keep error output small and safe for production clients.
   console.error(err);
   res.status(500).json({ message: "មានបញ្ហានៅម៉ាស៊ីនមេ (Server error)" });

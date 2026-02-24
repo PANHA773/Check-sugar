@@ -5,6 +5,15 @@ import { normalizeAgePayload } from "../utils/ageSugarProfile.js";
 
 const router = express.Router();
 
+const MAX_PROFILE_IMAGE_LENGTH = 1_500_000;
+
+function normalizeProfileImage(value) {
+  if (value == null) return "";
+  const normalized = String(value).trim();
+  if (!normalized) return "";
+  return normalized.slice(0, MAX_PROFILE_IMAGE_LENGTH);
+}
+
 router.get("/stats/summary", async (_req, res, next) => {
   try {
     const [totalUsers, adminCount, userCount, activeCount, blockedCount, childrenCount, adultCount, elderlyCount] = await Promise.all([
@@ -68,6 +77,91 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+router.get("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).select("-passwordHash").lean();
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+    return res.json(user);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch("/:id/profile", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const existing = await User.findById(id);
+    if (!existing) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    const hasName = req.body?.name !== undefined;
+    const hasEmail = req.body?.email !== undefined;
+    const hasPassword = req.body?.password !== undefined;
+    const hasProfileImage = req.body?.profileImage !== undefined;
+
+    if (!hasName && !hasEmail && !hasPassword && !hasProfileImage) {
+      return res.status(400).json({
+        message: "No profile changes provided"
+      });
+    }
+
+    if (hasName) {
+      const nextName = String(req.body?.name || "").trim();
+      if (!nextName) {
+        return res.status(400).json({
+          message: "Name is required"
+        });
+      }
+      existing.name = nextName;
+    }
+
+    if (hasEmail) {
+      const nextEmail = String(req.body?.email || "").trim().toLowerCase();
+      if (!nextEmail) {
+        return res.status(400).json({
+          message: "Email is required"
+        });
+      }
+      existing.email = nextEmail;
+    }
+
+    if (hasPassword) {
+      const nextPassword = String(req.body?.password || "").trim();
+      if (nextPassword.length < 6) {
+        return res.status(400).json({
+          message: "Password must be at least 6 characters"
+        });
+      }
+      existing.passwordHash = await bcrypt.hash(nextPassword, 10);
+    }
+
+    if (hasProfileImage) {
+      existing.profileImage = normalizeProfileImage(req.body?.profileImage);
+    }
+
+    await existing.save();
+
+    const output = existing.toObject();
+    delete output.passwordHash;
+    return res.json(output);
+  } catch (error) {
+    if (error?.code === 11000) {
+      return res.status(409).json({
+        message: "Email already exists"
+      });
+    }
+    return next(error);
+  }
+});
+
 router.post("/", async (req, res, next) => {
   try {
     const { name, email, password, role, status } = req.body;
@@ -93,6 +187,7 @@ router.post("/", async (req, res, next) => {
       passwordHash,
       role: role === "admin" ? "admin" : "user",
       status: status === "blocked" ? "blocked" : "active",
+      profileImage: normalizeProfileImage(req.body?.profileImage),
       ...agePayload
     });
 
@@ -152,6 +247,9 @@ router.put("/:id", async (req, res, next) => {
     existing.birthYear = agePayload.birthYear;
     existing.ageGroup = agePayload.ageGroup;
     existing.dailySugarLimitG = agePayload.dailySugarLimitG;
+    if (req.body?.profileImage !== undefined) {
+      existing.profileImage = normalizeProfileImage(req.body?.profileImage);
+    }
 
     if (password && String(password).trim().length > 0) {
       existing.passwordHash = await bcrypt.hash(String(password), 10);

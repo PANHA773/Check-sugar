@@ -83,4 +83,46 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
+router.post("/admin-login", async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required"
+      });
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const userDoc = await User.findOne({ email: normalizedEmail });
+    if (!userDoc) {
+      return res.status(401).json({
+        message: "Invalid email or password"
+      });
+    }
+    if (userDoc.status === "blocked") {
+      return res.status(403).json({
+        message: "This account is blocked"
+      });
+    }
+    if (userDoc.role !== "admin") {
+      return res.status(403).json({
+        message: "Admin account required"
+      });
+    }
+
+    const isValid = await bcrypt.compare(String(password), userDoc.passwordHash);
+    if (!isValid) {
+      return res.status(401).json({
+        message: "Invalid email or password"
+      });
+    }
+
+    const user = userDoc.toObject();
+    delete user.passwordHash;
+    return res.json({ user });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 export default router;

@@ -47,6 +47,11 @@ const userSchema = new mongoose.Schema(
     dailySugarLimitG: {
       type: Number,
       default: 25
+    },
+    profileImage: {
+      type: String,
+      default: "",
+      trim: true
     }
   },
   { timestamps: true }

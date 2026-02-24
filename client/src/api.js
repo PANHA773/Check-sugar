@@ -38,6 +38,11 @@ export async function getUsers(params = {}) {
   return data;
 }
 
+export async function getUserById(id) {
+  const { data } = await api.get(`/users/${id}`);
+  return data;
+}
+
 export async function getUserStats() {
   const { data } = await api.get("/users/stats/summary");
   return data;
@@ -55,6 +60,16 @@ export async function updateUser(id, payload) {
 
 export async function deleteUser(id) {
   await api.delete(`/users/${id}`);
+}
+
+export async function updateUserProfile(id, payload) {
+  const { data } = await api.patch(`/users/${id}/profile`, payload);
+  return data;
+}
+
+export async function adminLogin({ email, password }) {
+  const { data } = await api.post("/auth/admin-login", { email, password });
+  return data;
 }
 
 export default api;
