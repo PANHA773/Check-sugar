@@ -72,6 +72,31 @@ Flutter networking:
 - Uses `dio` as HTTP client
 - Uses backend APIs for register/login and barcode lookup
 
+## 4) Deploy Frontend to Netlify (GitHub Repo)
+
+This repo includes `netlify.toml` configured for the React app in `client/`.
+
+### Netlify build setup
+- Base directory: `client`
+- Build command: `npm ci && npm run build`
+- Publish directory: `dist`
+
+### Required Netlify environment variable
+- `VITE_API_URL=https://your-backend-domain.com/api`
+
+### Deploy steps
+1. Open: `https://app.netlify.com/start/repos/PANHA773/Check-sugar`
+2. Select your repo and create site.
+3. In Netlify Site Settings -> Environment Variables, add `VITE_API_URL`.
+4. Deploy.
+
+### Backend CORS for Netlify
+In your backend `.env`, set `CLIENT_URL` to include your Netlify URL (comma-separated supported):
+
+```env
+CLIENT_URL=http://localhost:5173,https://your-netlify-site.netlify.app
+```
+
 ## API Endpoints
 - `GET /api/health`
 - `POST /api/auth/register`

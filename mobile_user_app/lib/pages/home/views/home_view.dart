@@ -45,55 +45,40 @@ class HomeView extends GetView<HomeController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _FadeSlide(
-                  delayMs: 0,
-                  child: _HeroCard(
-                    title: "home_easy_check".tr,
-                    subtitle: "home_description".tr,
-                  ),
+                _HeroCard(
+                  title: "home_easy_check".tr,
+                  subtitle: "home_description".tr,
                 ),
                 const SizedBox(height: 14),
-                _FadeSlide(
-                  delayMs: 80,
-                  child: _DailyLimitCard(
-                    ageGroup: controller.ageGroupLabel,
-                    age: controller.age,
-                    sugarLimitG: controller.dailySugarLimitG,
-                    sugarLimitSpoons: controller.dailyLimitSpoonsText,
-                  ),
+                _DailyLimitCard(
+                  ageGroup: controller.ageGroupLabel,
+                  age: controller.age,
+                  sugarLimitG: controller.dailySugarLimitG,
+                  sugarLimitSpoons: controller.dailyLimitSpoonsText,
                 ),
                 const SizedBox(height: 18),
-                _FadeSlide(
-                  delayMs: 150,
-                  child: _ActionCard(
-                    title: "scan_food".tr,
-                    subtitle: "scan_barcode".tr,
-                    icon: Icons.qr_code_scanner_rounded,
-                    accent: const Color(0xFF158F62),
-                    onTap: controller.goScan,
-                  ),
+                _ActionCard(
+                  title: "scan_food".tr,
+                  subtitle: "scan_barcode".tr,
+                  icon: Icons.qr_code_scanner_rounded,
+                  accent: const Color(0xFF158F62),
+                  onTap: controller.goScan,
                 ),
                 const SizedBox(height: 12),
-                _FadeSlide(
-                  delayMs: 230,
-                  child: _ActionCard(
-                    title: "manual_add_food".tr,
-                    subtitle: "manual_add".tr,
-                    icon: Icons.edit_note_rounded,
-                    accent: const Color(0xFF3C7BEA),
-                    onTap: controller.goManualAdd,
-                  ),
+                _ActionCard(
+                  title: "manual_add_food".tr,
+                  subtitle: "manual_add".tr,
+                  icon: Icons.edit_note_rounded,
+                  accent: const Color(0xFF3C7BEA),
+                  onTap: controller.goManualAdd,
                 ),
                 const SizedBox(height: 12),
-                _FadeSlide(
-                  delayMs: 300,
-                  child: _ActionCard(
-                    title: "view_history".tr,
-                    subtitle: "history".tr,
-                    icon: Icons.history_rounded,
-                    accent: const Color(0xFF9656D9),
-                    onTap: controller.goHistory,
-                  ),
+                _ActionCard(
+                  title: "view_history".tr,
+                  subtitle: "history".tr,
+                  icon: Icons.history_rounded,
+                  accent: const Color(0xFF9656D9),
+                  onTap: controller.goHistory,
                 ),
               ],
             ),
@@ -124,8 +109,8 @@ class _HeroCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF0D8C5A).withValues(alpha: 0.28),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -203,8 +188,8 @@ class _DailyLimitCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -326,30 +311,6 @@ class _ActionCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _FadeSlide extends StatelessWidget {
-  const _FadeSlide({required this.child, required this.delayMs});
-
-  final Widget child;
-  final int delayMs;
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 420 + delayMs),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        final dy = (1 - value) * 10;
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(offset: Offset(0, dy), child: child),
-        );
-      },
-      child: child,
     );
   }
 }

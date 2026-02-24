@@ -12,8 +12,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/cambo_sugar_scan";
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+const allowedOrigins = CLIENT_URL.split(",").map((value) => value.trim()).filter(Boolean);
 
-app.use(cors({ origin: CLIENT_URL }));
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(morgan("dev"));

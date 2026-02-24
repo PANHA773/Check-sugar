@@ -1,22 +1,27 @@
+import "dart:async";
+
 import "package:get/get.dart";
 
 import "../../../app/routes/app_pages.dart";
-import "../../../services/auth_service.dart";
 
 class LogoController extends GetxController {
-  final AuthService _authService = Get.find<AuthService>();
+  Timer? _redirectTimer;
 
   @override
-  void onInit() {
-    super.onInit();
-    Future<void>.delayed(const Duration(seconds: 2), _goNext);
+  void onReady() {
+    super.onReady();
+    _redirectTimer = Timer(const Duration(milliseconds: 800), _goNext);
+  }
+
+  @override
+  void onClose() {
+    _redirectTimer?.cancel();
+    super.onClose();
   }
 
   void _goNext() {
-    if (_authService.isLoggedIn) {
-      Get.offAllNamed(Routes.HOME);
-      return;
-    }
-    Get.offAllNamed(Routes.LOGIN);
+    if (isClosed) return;
+    if (Get.currentRoute != Routes.LOGO) return;
+    Get.offAllNamed(Routes.HOME);
   }
 }

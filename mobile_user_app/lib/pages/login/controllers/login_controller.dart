@@ -19,6 +19,8 @@ class LoginController extends GetxController {
   }
 
   Future<void> login() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+
     final email = emailController.text.trim();
     final password = passwordController.text;
 
@@ -33,6 +35,7 @@ class LoginController extends GetxController {
     isSubmitting.value = true;
     try {
       await _authService.login(email: email, password: password);
+      await Future<void>.delayed(const Duration(milliseconds: 16));
       Get.offAllNamed(Routes.HOME);
     } on ApiException catch (error) {
       Get.snackbar("login_failed".tr, error.message);
