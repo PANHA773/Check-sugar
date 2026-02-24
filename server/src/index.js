@@ -14,7 +14,31 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/cambo_suga
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 const allowedOrigins = CLIENT_URL.split(",").map((value) => value.trim()).filter(Boolean);
 
-app.use(cors({ origin: allowedOrigins }));
+app.use(
+  cors({
+    origin(origin, callback) {
+      // Allow server-to-server, curl, and same-origin requests without Origin header.
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      try {
+        const hostname = new URL(origin).hostname;
+        const isLocalhost = hostname === "localhost" || hostname === "127.0.0.1";
+        const isNetlifyPreview = hostname.endsWith(".netlify.app");
+        if (isLocalhost || isNetlifyPreview) {
+          return callback(null, true);
+        }
+      } catch {
+        return callback(new Error("Invalid Origin header"));
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    }
+  })
+);
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(morgan("dev"));
